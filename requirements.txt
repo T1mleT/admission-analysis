@@ -1,0 +1,38 @@
+# Django Framework
+Django==4.2.8
+
+# PostgreSQL Database Adapter
+psycopg2-binary==2.9.9
+
+# Environment Variables Management
+python-decouple==3.8
+
+# ExcelCSV Processing
+openpyxl==3.1.2
+pandas==2.1.4
+
+# PDF Generation
+reportlab==4.0.7
+matplotlib==3.8.2
+
+# Django Extensions
+django-extensions==3.2.3
+
+# Development Tools
+django-debug-toolbar==4.2.0
+
+# Django REST Framework (for API)
+djangorestframework==3.14.0
+
+# CORS Headers (if needed)
+django-cors-headers==4.3.1
+
+# Pillow (for images in PDF)
+Pillow==10.1.0
+
+# Progress bars (optional)
+tqdm==4.66.1
+
+# Testing
+pytest==7.4.3
+pytest-django==4.7.0
