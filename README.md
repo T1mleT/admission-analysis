@@ -237,7 +237,7 @@ python manage.py showmigrations
 
 ```bash
 # Загрузить образовательные программы
-python manage.py loaddata programs.json
+python manage.py init_programs
 ```
 
 **Создается 4 программы:**
