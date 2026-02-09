@@ -24,8 +24,6 @@ urlpatterns = [
     # Отчеты
     path('reports/', views.reports, name='reports'),
     path('reports/pdf/', views.generate_pdf_report, name='generate_pdf_report'),
-    path('reports/export/applicants/', views.export_applicants, name='export_applicants'),
-    path('reports/export/applications/', views.export_applications, name='export_applications'),
     
     # API
     path('api/passing-scores/', views.passing_scores_api, name='passing_scores_api'),
