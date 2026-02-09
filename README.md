@@ -380,9 +380,9 @@ python manage.py loaddata backup.json
 
 **Проект:** [https://github.com/T1mleT/admission-analysis](https://github.com/T1mleT/admission-analysis)
 
-**Видео:** [vk](https://github.com/your-username/admission-analysis/issues)
+**Видео:** [vk](vk.com)
 
-**Документация:** [Wiki](https://github.com/your-username/admission-analysis/wiki)
+**Документация:** [Командный кейс № 3 «Анализ поступления» Летуновский, Билера, Нарижный]([https://github.com/your-username/admission-analysis/wiki](https://github.com/T1mleT/admission-analysis/blob/d98c44c5e81fd1d8d3dfe2e2b69411f01c84d311/%D0%9A%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D0%BD%D1%8B%D0%B9%20%D0%BA%D0%B5%D0%B9%D1%81%20%E2%84%96%203%20%C2%AB%D0%90%D0%BD%D0%B0%D0%BB%D0%B8%D0%B7%20%D0%BF%D0%BE%D1%81%D1%82%D1%83%D0%BF%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F%C2%BB%20%D0%9B%D0%B5%D1%82%D1%83%D0%BD%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%2C%20%D0%91%D0%B8%D0%BB%D0%B5%D1%80%D0%B0%2C%20%D0%9D%D0%B0%D1%80%D0%B8%D0%B6%D0%BD%D1%8B%D0%B9.pdf))
 
 ---
 
