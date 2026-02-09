@@ -1,0 +1,198 @@
+{% extends 'admissions/base.html' %}
+
+{% block title %}Просмотр списков - Система анализа поступления{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active" aria-current="page">
+        Просмотр списков
+    </li>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">
+        <i class="bi bi-list-ul me-2"></i>
+        Просмотр списков абитуриентов
+    </h1>
+
+    <!-- Filters -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-funnel me-2"></i>
+                Фильтры
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="program" class="form-label">Программа:</label>
+                    <select name="program" id="program" class="form-select">
+                        <option value="">Все программы</option>
+                        {% for prog in programs %}
+                            <option value="{{ prog.code }}" {% if request.GET.program == prog.code %}selected{% endif %}>
+                                {{ prog.code }} - {{ prog.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="date" class="form-label">Дата:</label>
+                    <select name="date" id="date" class="form-select">
+                        <option value="">Все даты</option>
+                        {% for date in available_dates %}
+                            <option value="{{ date|date:'Y-m-d' }}" {% if request.GET.date == date|date:'Y-m-d' %}selected{% endif %}>
+                                {{ date|date:'d.m.Y' }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="consent" class="form-label">Согласие:</label>
+                    <select name="consent" id="consent" class="form-select">
+                        <option value="">Все</option>
+                        <option value="1" {% if request.GET.consent == '1' %}selected{% endif %}>Да</option>
+                        <option value="0" {% if request.GET.consent == '0' %}selected{% endif %}>Нет</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="priority" class="form-label">Приоритет:</label>
+                    <select name="priority" id="priority" class="form-select">
+                        <option value="">Все</option>
+                        <option value="1" {% if request.GET.priority == '1' %}selected{% endif %}>1</option>
+                        <option value="2" {% if request.GET.priority == '2' %}selected{% endif %}>2</option>
+                        <option value="3" {% if request.GET.priority == '3' %}selected{% endif %}>3</option>
+                        <option value="4" {% if request.GET.priority == '4' %}selected{% endif %}>4</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>
+                        Применить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>
+                Результаты ({{ applications.count }} записей)
+            </h5>
+            <div>
+                <a href="?{{ request.GET.urlencode }}&export=csv" class="btn btn-light btn-sm">
+                    <i class="bi bi-download me-1"></i>
+                    CSV
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if applications %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Программа</th>
+                                <th>Приоритет</th>
+                                <th>Согласие</th>
+                                <th>Баллы</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                                <tr>
+                                    <td><strong>{{ app.applicant.applicant_id }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ app.program.code }}</span>
+                                        <br>
+                                        <small class="text-muted">{{ app.program.name }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ app.priority }}</span>
+                                    </td>
+                                    <td>
+                                        {% if app.consent %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Да
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Нет
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ app.applicant.total_score }}</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            Ф: {{ app.applicant.physics_ict_score }} | 
+                                            Р: {{ app.applicant.russian_score }} | 
+                                            М: {{ app.applicant.math_score }}
+                                        </small>
+                                    </td>
+                                    <td>{{ app.application_date|date:'d.m.Y' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <div class="card-footer">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm justify-content-center mb-0">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1&{{ request.GET.urlencode }}">Первая</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}">Последняя</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <p class="text-muted mt-3">Записи не найдены</p>
+                    <a href="{% url 'admissions:upload' %}" class="btn btn-primary">
+                        <i class="bi bi-cloud-upload me-2"></i>
+                        Загрузить данные
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,324 @@
+{% extends 'admissions/base.html' %}
+
+{% block title %}История проходных баллов{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{% url 'admissions:passing_scores' %}">Проходные баллы</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        История
+    </li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Динамика проходных баллов
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if history %}
+                        <!-- График -->
+                        <div class="chart-container" style="position: relative; height: 500px; margin-bottom: 30px;">
+                            <canvas id="passingScoreChart"></canvas>
+                        </div>
+
+                        <!-- Таблица с данными -->
+                        <div class="table-responsive mt-4">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Дата</th>
+                                        {% for program in programs %}
+                                            <th class="text-center">{{ program.code }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in history %}
+                                        <tr>
+                                            <td><strong>{{ entry.date|date:"d.m.Y" }}</strong></td>
+                                            
+                                            {% for program in programs %}
+                                                <td class="text-center">
+                                                    {% if program.code == "PM" %}
+                                                        {% if entry.programs.PM.passing_score == "НЕДОБОР" %}
+                                                            <span class="badge bg-warning text-dark">НЕДОБОР</span>
+                                                        {% else %}
+                                                            <strong class="text-primary">{{ entry.programs.PM.passing_score }}</strong>
+                                                        {% endif %}
+                                                    {% elif program.code == "IVT" %}
+                                                        {% if entry.programs.IVT.passing_score == "НЕДОБОР" %}
+                                                            <span class="badge bg-warning text-dark">НЕДОБОР</span>
+                                                        {% else %}
+                                                            <strong class="text-primary">{{ entry.programs.IVT.passing_score }}</strong>
+                                                        {% endif %}
+                                                    {% elif program.code == "ITSS" %}
+                                                        {% if entry.programs.ITSS.passing_score == "НЕДОБОР" %}
+                                                            <span class="badge bg-warning text-dark">НЕДОБОР</span>
+                                                        {% else %}
+                                                            <strong class="text-primary">{{ entry.programs.ITSS.passing_score }}</strong>
+                                                        {% endif %}
+                                                    {% elif program.code == "IB" %}
+                                                        {% if entry.programs.IB.passing_score == "НЕДОБОР" %}
+                                                            <span class="badge bg-warning text-dark">НЕДОБОР</span>
+                                                        {% else %}
+                                                            <strong class="text-primary">{{ entry.programs.IB.passing_score }}</strong>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="text-muted">—</span>
+                                                    {% endif %}
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Легенда (ДИНАМИЧЕСКАЯ) -->
+                        <div class="info-box mt-4">
+                            <h6><i class="bi bi-info-circle me-2"></i>Обозначения программ:</h6>
+                            <ul class="mb-0">
+                                {% for program in programs %}
+                                    <li>
+                                        <strong>{{ program.code }}</strong> - {{ program.name }} 
+                                        ({{ program.seats }} мест{% if program.seats == 1 %}о{% elif program.seats < 5 %}а{% endif %})
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="{% url 'admissions:passing_scores' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Назад к проходным баллам
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Нет данных для отображения. Загрузите конкурсные списки.
+                        </div>
+                        <a href="{% url 'admissions:upload' %}" class="btn btn-primary">
+                            <i class="bi bi-cloud-upload me-2"></i>
+                            Загрузить данные
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if history %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Инициализация графика...');
+    
+    // Получаем данные из Django
+    const historyData = {{ history_json|safe }};
+    const programsData = [
+        {% for program in programs %}
+        {
+            code: '{{ program.code }}',
+            name: '{{ program.name }}'
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    console.log('Данные истории:', historyData);
+    console.log('Программы:', programsData);
+    
+    if (!historyData || historyData.length === 0) {
+        console.error('Нет данных для графика');
+        return;
+    }
+    
+    // Извлечение дат
+    const labels = historyData.map(entry => {
+        const date = new Date(entry.date);
+        return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+    });
+    
+    // Цвета для программ
+    const colorMap = {
+        'PM': 'rgb(255, 99, 132)',
+        'IVT': 'rgb(54, 162, 235)',
+        'ITSS': 'rgb(255, 206, 86)',
+        'IB': 'rgb(75, 192, 192)',
+    };
+    
+    // Функция для извлечения значений программы
+    function extractScores(programCode) {
+        return historyData.map(entry => {
+            const score = entry.programs[programCode]?.passing_score;
+            return (score === "НЕДОБОР" || score === null || score === undefined) ? null : parseInt(score);
+        });
+    }
+    
+    // Создаем datasets для каждой программы
+    const datasets = programsData.map((program) => {
+        const color = colorMap[program.code] || 'rgb(128, 128, 128)';
+        const rgb = color.match(/\d+/g);
+        const rgbaFill = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.1)`;
+        
+        return {
+            label: `${program.code} - ${program.name}`,
+            data: extractScores(program.code),
+            borderColor: color,
+            backgroundColor: rgbaFill,
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            pointBackgroundColor: color,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            spanGaps: true,
+        };
+    });
+    
+    console.log('Datasets:', datasets);
+    
+    // Найти min/max для оси Y
+    let allScores = [];
+    datasets.forEach(dataset => {
+        allScores = allScores.concat(dataset.data.filter(val => val !== null && !isNaN(val)));
+    });
+    
+    if (allScores.length === 0) {
+        console.error('Нет валидных данных');
+        document.querySelector('.chart-container').innerHTML = 
+            '<div class="alert alert-warning">Недостаточно данных для графика. Все программы имеют статус НЕДОБОР.</div>';
+        return;
+    }
+    
+    const minScore = Math.min(...allScores);
+    const maxScore = Math.max(...allScores);
+    const padding = 10;
+    
+    // Создание графика
+    const ctx = document.getElementById('passingScoreChart');
+    if (!ctx) {
+        console.error('Canvas не найден');
+        return;
+    }
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Динамика проходных баллов по датам',
+                    font: { size: 18, weight: 'bold' },
+                    padding: { top: 10, bottom: 20 }
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: { size: 12 },
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y + ' баллов';
+                            } else {
+                                label += 'НЕДОБОР';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Дата',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' },
+                    ticks: { font: { size: 12 } }
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Проходной балл',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    min: Math.floor(minScore - padding),
+                    max: Math.ceil(maxScore + padding),
+                    ticks: {
+                        stepSize: 5,
+                        font: { size: 12 }
+                    },
+                    grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' }
+                }
+            }
+        }
+    });
+    
+    console.log('График создан');
+});
+</script>
+{% endif %}
+
+<style>
+.info-box {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-left: 4px solid #17a2b8;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    color: #0c5460;
+}
+
+.info-box h6 {
+    color: #0c5460;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.info-box ul {
+    list-style-position: inside;
+}
+
+.info-box ul li {
+    padding: 0.25rem 0;
+}
+</style>
+{% endblock %}

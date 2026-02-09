@@ -1,0 +1,212 @@
+{% extends 'admissions/base.html' %}
+
+{% block title %}Проходные баллы{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active" aria-current="page">
+        Проходные баллы
+    </li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5">
+                <i class="bi bi-bar-chart-line me-2"></i>
+                Проходные баллы
+            </h1>
+            
+            <!-- Выбор даты -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-body">
+                    {% if available_dates %}
+                        <form method="get" class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <label for="dateSelect" class="form-label">Выберите дату:</label>
+                            </div>
+                            <div class="col-auto">
+                                <select name="date" id="dateSelect" class="form-select" onchange="this.form.submit()">
+                                    {% for date in available_dates %}
+                                        <option value="{{ date|date:'Y-m-d' }}" 
+                                                {% if date == selected_date %}selected{% endif %}>
+                                            {{ date|date:'d.m.Y' }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <a href="{% url 'admissions:passing_scores_history' %}" class="btn btn-info">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    История по всем датам
+                                </a>
+                            </div>
+                            <div class="col-auto">
+                                <a href="{% url 'admissions:applicant_chances' %}" class="btn btn-secondary">
+                                    <i class="bi bi-search me-2"></i>
+                                    Проверить шансы абитуриента
+                                </a>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Нет данных. Загрузите конкурсные списки.
+                        </div>
+                        <a href="{% url 'admissions:upload' %}" class="btn btn-primary">
+                            <i class="bi bi-cloud-upload me-2"></i>
+                            Загрузить данные
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if selected_date and programs_data %}
+                <h3 class="mt-4">Дата: {{ selected_date|date:'d.m.Y' }}</h3>
+                
+                <!-- Таблица проходных баллов -->
+                <div class="card shadow-sm mt-3">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Программа</th>
+                                        <th class="text-center">Мест</th>
+                                        <th class="text-center">Проходной балл</th>
+                                        <th class="text-center">Зачислено</th>
+                                        <th class="text-center">Заявлений всего</th>
+                                        <th class="text-center">С согласием</th>
+                                        <th class="text-center">Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for program_code, data in programs_data.items %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ program_code }}</strong><br>
+                                                <small class="text-muted">{{ data.program_name }}</small>
+                                            </td>
+                                            <td class="text-center">{{ data.total_seats }}</td>
+                                            <td class="text-center">
+                                                {% if data.passing_score == "НЕДОБОР" %}
+                                                    <span class="badge bg-warning text-dark fs-5">НЕДОБОР</span>
+                                                {% else %}
+                                                    <span class="badge bg-success fs-5">{{ data.passing_score }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center"><strong>{{ data.enrolled_count }}</strong></td>
+                                            <td class="text-center">{{ data.applications_total }}</td>
+                                            <td class="text-center">{{ data.applications_with_consent }}</td>
+                                            <td class="text-center">
+                                                {% if data.has_shortage %}
+                                                    <span class="badge bg-warning">Недобор</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">Набор завершен</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Детальная информация по каждой программе -->
+                <div class="row mt-4">
+                    {% for program_code, data in programs_data.items %}
+                        <div class="col-lg-6 col-md-12 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">{{ program_code }} - {{ data.program_name }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="mb-3">
+                                        Проходной балл: 
+                                        {% if data.passing_score == "НЕДОБОР" %}
+                                            <span class="badge bg-warning text-dark">НЕДОБОР</span>
+                                        {% else %}
+                                            <span class="badge bg-success">{{ data.passing_score }}</span>
+                                        {% endif %}
+                                    </h4>
+                                    
+                                    <p><strong>Зачислено:</strong> {{ data.enrolled_count }} из {{ data.total_seats }} мест</p>
+                                    
+                                    <h6 class="mt-3">Статистика по приоритетам (зачисленные):</h6>
+                                    <ul class="list-unstyled">
+                                        {% for priority, count in data.stats_by_priority.items %}
+                                            <li class="mb-1">
+                                                <span class="badge bg-secondary">Приоритет {{ priority }}</span>: 
+                                                <strong>{{ count }}</strong> чел.
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    
+                                    <!-- Показать первых 20 зачисленных -->
+                                    {% if data.enrolled_list %}
+                                        <details class="mt-3">
+                                            <summary class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-list-ul me-1"></i>
+                                                Показать список зачисленных ({{ data.enrolled_list|length }})
+                                            </summary>
+                                            <div class="table-responsive mt-2">
+                                                <table class="table table-sm table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>ID</th>
+                                                            <th class="text-center">Баллы</th>
+                                                            <th class="text-center">Приоритет</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for enrolled in data.enrolled_list|slice:":20" %}
+                                                            <tr>
+                                                                <td>{{ enrolled.applicant_id }}</td>
+                                                                <td class="text-center"><strong>{{ enrolled.total_score }}</strong></td>
+                                                                <td class="text-center">
+                                                                    <span class="badge bg-info">{{ enrolled.priority }}</span>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                        {% if data.enrolled_list|length > 20 %}
+                                                            <tr>
+                                                                <td colspan="3" class="text-center text-muted">
+                                                                    <i class="bi bi-three-dots"></i>
+                                                                    и еще {{ data.enrolled_list|length|add:"-20" }} чел.
+                                                                </td>
+                                                            </tr>
+                                                        {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </details>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Пояснение -->
+                <div class="alert alert-info mt-4">
+                    <h6><i class="bi bi-info-circle me-2"></i>Пояснение:</h6>
+                    <ul class="mb-0">
+                        <li><strong>Проходной балл</strong> - балл последнего зачисленного абитуриента при заполнении всех мест</li>
+                        <li><strong>НЕДОБОР</strong> - абитуриентов с согласием меньше, чем количество мест</li>
+                        <li><strong>Приоритет</strong> - порядок предпочтения программы абитуриентом (1 = первый выбор)</li>
+                        <li><strong>Алгоритм зачисления</strong>: абитуриенты с высшими баллами зачисляются на программы по их приоритетам</li>
+                    </ul>
+                </div>
+            {% elif not available_dates %}
+                <!-- Уже показано выше -->
+            {% else %}
+                <div class="alert alert-warning mt-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Нет данных для отображения.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

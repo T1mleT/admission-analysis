@@ -1,0 +1,326 @@
+{% extends 'admissions/base.html' %}
+
+{% block title %}Главная - Система анализа поступления{% endblock %}
+
+{% block breadcrumb_items %}
+    <!-- Уже на главной, дополнительные крошки не нужны -->
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="bi bi-mortarboard-fill me-3"></i>
+                    Система анализа поступления
+                </h1>
+                <p class="lead mb-4">
+                    Автоматизированная система для анализа конкурсных списков, 
+                    расчета проходных баллов и формирования отчетности
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'admissions:upload' %}" class="btn btn-light btn-lg">
+                        <i class="bi bi-cloud-upload me-2"></i>
+                        Загрузить данные
+                    </a>
+                    <a href="{% url 'admissions:passing_scores' %}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-calculator me-2"></i>
+                        Проходные баллы
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block">
+                <i class="bi bi-graph-up-arrow display-1 opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="container my-5">
+    <div class="row g-4">
+        <!-- Абитуриенты -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card stat-card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-2">Абитуриенты</h6>
+                            <h2 class="mb-0 fw-bold">{{ applicants_count|default:0 }}</h2>
+                            <small class="text-success">
+                                <i class="bi bi-arrow-up"></i> Всего в системе
+                            </small>
+                        </div>
+                        <div class="stat-icon bg-primary-soft">
+                            <i class="bi bi-people-fill text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Заявления -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card stat-card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-2">Заявления</h6>
+                            <h2 class="mb-0 fw-bold">{{ applications_count|default:0 }}</h2>
+                            <small class="text-info">
+                                <i class="bi bi-file-earmark"></i> На все программы
+                            </small>
+                        </div>
+                        <div class="stat-icon bg-info-soft">
+                            <i class="bi bi-file-earmark-text-fill text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Программы -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card stat-card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-2">Программы</h6>
+                            <h2 class="mb-0 fw-bold">{{ programs_count|default:0 }}</h2>
+                            <small class="text-warning">
+                                <i class="bi bi-book"></i> Образовательных
+                            </small>
+                        </div>
+                        <div class="stat-icon bg-warning-soft">
+                            <i class="bi bi-journal-code text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Загрузки -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card stat-card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-2">Загрузки</h6>
+                            <h2 class="mb-0 fw-bold">{{ last_uploads|length|default:0 }}</h2>
+                            <small class="text-success">
+                                <i class="bi bi-clock-history"></i> В истории
+                            </small>
+                        </div>
+                        <div class="stat-icon bg-success-soft">
+                            <i class="bi bi-cloud-check-fill text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Programs Overview -->
+<div class="container my-5">
+    <h2 class="mb-4">
+        <i class="bi bi-mortarboard me-2"></i>
+        Образовательные программы
+    </h2>
+    
+    <div class="row g-4">
+        {% for program in programs %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card program-card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0 fw-bold">{{ program.code }}</h5>
+                            <span class="badge bg-primary rounded-pill">{{ program.seats }} мест</span>
+                        </div>
+                        <p class="card-text text-muted">{{ program.name }}</p>
+                        
+                        {% if program.applications_count %}
+                            <div class="mt-3 pt-3 border-top">
+                                <div class="d-flex justify-content-between text-sm">
+                                    <span class="text-muted">Заявлений:</span>
+                                    <strong>{{ program.applications_count }}</strong>
+                                </div>
+                                <div class="progress mt-2" style="height: 6px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {% widthratio program.applications_count program.seats 100 %}%"
+                                         aria-valuenow="{{ program.applications_count }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="{{ program.seats }}">
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Программы не найдены. Запустите команду <code>python manage.py init_programs</code>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Actions & History -->
+<div class="container my-5">
+    <div class="row g-4">
+        <!-- Quick Actions -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-charge-fill me-2"></i>
+                        Быстрые действия
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'admissions:upload' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-cloud-upload fs-4 text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Загрузить конкурсные списки</h6>
+                                    <small class="text-muted">Импорт данных из CSV файлов</small>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'admissions:applications_list' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-list-ul fs-4 text-info me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Просмотр списков абитуриентов</h6>
+                                    <small class="text-muted">Фильтрация и сортировка данных</small>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'admissions:passing_scores' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calculator fs-4 text-success me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Рассчитать проходные баллы</h6>
+                                    <small class="text-muted">Анализ с учетом приоритетов</small>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'admissions:reports' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-pdf fs-4 text-danger me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Сформировать отчет</h6>
+                                    <small class="text-muted">Экспорт в PDF формате</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload History -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        История загрузок
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if last_uploads %}
+                        <div class="list-group list-group-flush">
+                            {% for upload in last_uploads %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                {{ upload.competition_date|date:"d.m.Y" }}
+                                            </h6>
+                                            <small class="text-muted">
+                                                {{ upload.upload_date|date:"d.m.Y H:i" }}
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">
+                                            {{ upload.records_count }} записей
+                                        </span>
+                                    </div>
+                                    {% if upload.programs_stats %}
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                Программы: 
+                                                {% for prog, data in upload.programs_stats.items %}
+                                                    <span class="badge bg-light text-dark">{{ prog }}</span>
+                                                {% endfor %}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                            <p class="text-muted mt-3">История загрузок пуста</p>
+                            <a href="{% url 'admissions:upload' %}" class="btn btn-primary">
+                                <i class="bi bi-cloud-upload me-2"></i>
+                                Загрузить данные
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Section -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body p-4">
+                    <h4 class="mb-3">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        О системе
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-primary">Возможности системы:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Загрузка конкурсных списков из CSV</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Автоматическое обновление базы данных</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Расчет проходных баллов с учетом приоритетов</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Визуализация динамики проходных баллов</li>
+                                <li><i class="bi bi-check-circle text-success me-2"></i>Формирование отчетности в PDF</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Технические характеристики:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-gear text-primary me-2"></i>Время загрузки: &lt; 5 секунд</li>
+                                <li><i class="bi bi-gear text-primary me-2"></i>Поддержка до 20 файлов одновременно</li>
+                                <li><i class="bi bi-gear text-primary me-2"></i>Транзакционная обработка данных</li>
+                                <li><i class="bi bi-gear text-primary me-2"></i>Автоматическая валидация данных</li>
+                                <li><i class="bi bi-gear text-primary me-2"></i>Адаптивный интерфейс (mobile-friendly)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

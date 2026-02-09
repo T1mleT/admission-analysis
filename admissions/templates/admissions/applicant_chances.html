@@ -1,0 +1,254 @@
+{% extends 'admissions/base.html' %}
+
+{% block title %}Шансы абитуриента - Система анализа поступления{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{% url 'admissions:passing_scores' %}">Проходные баллы</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'admissions:applicant_chances' %}">Проверить шансы</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        Результаты
+    </li>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2">
+                                <i class="bi bi-person-check-fill me-2"></i>
+                                Результаты анализа шансов
+                            </h2>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div>
+                                    <small class="text-white-50 d-block">Абитуриент:</small>
+                                    <strong class="fs-5">#{{ chances.applicant_id }}</strong>
+                                </div>
+                                <div>
+                                    <small class="text-white-50 d-block">Сумма баллов:</small>
+                                    <strong class="fs-5">{{ chances.total_score }}</strong>
+                                </div>
+                                <div>
+                                    <small class="text-white-50 d-block">Дата:</small>
+                                    <strong class="fs-5">{{ selected_date|date:'d.m.Y' }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center d-none d-md-block">
+                            <i class="bi bi-graph-up-arrow display-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    {% if chances.applications %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart-fill me-2"></i>
+                            Анализ по программам
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 20%;">Программа</th>
+                                        <th style="width: 10%;" class="text-center">Приоритет</th>
+                                        <th style="width: 10%;" class="text-center">Согласие</th>
+                                        <th style="width: 12%;" class="text-center">Проходной балл</th>
+                                        <th style="width: 10%;" class="text-center">Ваш балл</th>
+                                        <th style="width: 10%;" class="text-center">Разница</th>
+                                        <th style="width: 15%;" class="text-center">Статус</th>
+                                        <th style="width: 13%;" class="text-center">Вероятность</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in chances.applications %}
+                                        <tr>
+                                            <td>
+                                                <strong class="d-block">{{ app.program_code }}</strong>
+                                                <small class="text-muted">{{ app.program_name }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary fs-6">{{ app.priority }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if app.consent %}
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Да
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-x-circle"></i> Нет
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if app.passing_score == "НЕДОБОР" %}
+                                                    <span class="badge bg-warning text-dark fs-6">НЕДОБОР</span>
+                                                {% else %}
+                                                    <strong class="fs-5">{{ app.passing_score }}</strong>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <strong class="fs-5 text-primary">{{ app.applicant_score }}</strong>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if app.difference %}
+                                                    {% if app.difference > 0 %}
+                                                        <span class="badge bg-success fs-6">+{{ app.difference }}</span>
+                                                    {% elif app.difference == 0 %}
+                                                        <span class="badge bg-warning text-dark fs-6">0</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger fs-6">{{ app.difference }}</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if app.status == "ЗАЧИСЛЕН" %}
+                                                    <span class="badge bg-success fs-6">
+                                                        <i class="bi bi-check-circle-fill"></i> {{ app.status }}
+                                                    </span>
+                                                {% elif app.status == "НА ГРАНИЦЕ" %}
+                                                    <span class="badge bg-warning text-dark fs-6">
+                                                        <i class="bi bi-exclamation-circle-fill"></i> {{ app.status }}
+                                                    </span>
+                                                {% elif app.status == "НЕ ЗАЧИСЛЕН" %}
+                                                    <span class="badge bg-danger fs-6">
+                                                        <i class="bi bi-x-circle-fill"></i> {{ app.status }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary fs-6">{{ app.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if app.chance == "Высокая" or app.chance == "Гарантировано" %}
+                                                    <span class="badge bg-success fs-6">
+                                                        <i class="bi bi-arrow-up-circle-fill"></i> {{ app.chance }}
+                                                    </span>
+                                                {% elif app.chance == "Средняя" %}
+                                                    <span class="badge bg-warning text-dark fs-6">
+                                                        <i class="bi bi-dash-circle-fill"></i> {{ app.chance }}
+                                                    </span>
+                                                {% elif app.chance == "Низкая" %}
+                                                    <span class="badge bg-danger fs-6">
+                                                        <i class="bi bi-arrow-down-circle-fill"></i> {{ app.chance }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-info fs-6">{{ app.chance }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body">
+                        <h5 class="text-primary mb-3">
+                            <i class="bi bi-lightbulb-fill me-2"></i>
+                            Рекомендации
+                        </h5>
+                        <ul class="mb-0">
+                            {% if chances.applications|length > 0 %}
+                                {% with first_app=chances.applications.0 %}
+                                    {% if first_app.status == "ЗАЧИСЛЕН" and first_app.consent %}
+                                        <li class="text-success mb-2">
+                                            <i class="bi bi-check-circle-fill me-2"></i>
+                                            <strong>Отличные новости!</strong> Вы зачислены на программу <strong>{{ first_app.program_code }}</strong> по приоритету {{ first_app.priority }}.
+                                        </li>
+                                    {% elif first_app.status == "НА ГРАНИЦЕ" %}
+                                        <li class="text-warning mb-2">
+                                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                            Ваш балл находится на границе проходного. Рекомендуем отслеживать динамику.
+                                        </li>
+                                    {% elif first_app.status == "НЕ ЗАЧИСЛЕН" %}
+                                        <li class="text-info mb-2">
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                            Рассмотрите программы с более низким проходным баллом.
+                                        </li>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endif %}
+                            
+                            {% for app in chances.applications %}
+                                {% if not app.consent %}
+                                    <li class="text-danger mb-2">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        Не забудьте подать согласие на зачисление для программы <strong>{{ app.program_code }}</strong>.
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <li class="text-muted">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Проверяйте шансы регулярно, так как конкурсная ситуация может измениться.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-warning shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-exclamation-circle display-1 text-warning mb-3"></i>
+                        <h4 class="text-warning">{{ chances.message }}</h4>
+                        <p class="text-muted mt-3">
+                            Возможно, абитуриент не подавал заявлений на выбранную дату, 
+                            или ID указан неверно.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="{% url 'admissions:applicant_chances' %}" class="btn btn-primary">
+                    <i class="bi bi-search me-2"></i>
+                    Проверить другого абитуриента
+                </a>
+                <a href="{% url 'admissions:passing_scores' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-calculator me-2"></i>
+                    Вернуться к проходным баллам
+                </a>
+                <a href="{% url 'admissions:dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-house me-2"></i>
+                    На главную
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

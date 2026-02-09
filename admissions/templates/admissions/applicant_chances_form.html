@@ -1,0 +1,139 @@
+{% extends 'admissions/base.html' %}
+
+{% block title %}Проверить шансы абитуриента{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{% url 'admissions:passing_scores' %}">Проходные баллы</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        Проверить шансы
+    </li>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="bi bi-person-check-fill me-2"></i>
+                        Проверить шансы на поступление
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Введите ID абитуриента и выберите дату для проверки вероятности зачисления
+                    </div>
+
+                    {% if not available_dates %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            В базе данных нет заявлений. Загрузите конкурсные списки.
+                        </div>
+                        <div class="d-grid">
+                            <a href="{% url 'admissions:upload' %}" class="btn btn-primary">
+                                <i class="bi bi-cloud-upload me-2"></i>
+                                Загрузить данные
+                            </a>
+                        </div>
+                    {% else %}
+                        <form method="post" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="applicant_id" class="form-label fw-bold">
+                                    <i class="bi bi-person-badge me-2"></i>
+                                    ID абитуриента:
+                                </label>
+                                <input type="number" 
+                                       name="applicant_id" 
+                                       id="applicant_id" 
+                                       class="form-control form-control-lg" 
+                                       required
+                                       placeholder="Например: 1001"
+                                       min="1">
+                                <div class="invalid-feedback">
+                                    Пожалуйста, введите ID абитуриента
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-lightbulb"></i>
+                                    Введите уникальный идентификатор абитуриента из конкурсных списков
+                                </small>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="date" class="form-label fw-bold">
+                                    <i class="bi bi-calendar3 me-2"></i>
+                                    Дата:
+                                </label>
+                                <select name="date" id="date" class="form-select form-select-lg" required>
+                                    <option value="">Выберите дату...</option>
+                                    {% for date in available_dates %}
+                                        <option value="{{ date|date:'Y-m-d' }}">
+                                            {{ date|date:'d.m.Y' }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Пожалуйста, выберите дату
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-search me-2"></i>
+                                    Проверить шансы
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'admissions:passing_scores' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Назад к проходным баллам
+                            </a>
+                            <a href="{% url 'admissions:dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-house me-2"></i>
+                                На главную
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Информационная карточка -->
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-primary mb-3">
+                        <i class="bi bi-question-circle me-2"></i>
+                        Как это работает?
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Система анализирует конкурсную ситуацию на выбранную дату
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Рассчитывает проходные баллы по всем программам
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Сравнивает баллы абитуриента с проходным баллом
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Показывает вероятность зачисления с учетом приоритетов
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

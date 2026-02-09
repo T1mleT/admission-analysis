@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Система анализа поступления абитуриентов">
+    <title>{% block title %}Система анализа поступления{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'admissions/css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'admissions:dashboard' %}">
+                <i class="bi bi-mortarboard-fill me-2"></i>
+                <span class="fw-bold">Система анализа поступления</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                           href="{% url 'admissions:dashboard' %}">
+                            <i class="bi bi-house-fill me-1"></i>
+                            Главная
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'upload' %}active{% endif %}" 
+                           href="{% url 'admissions:upload' %}">
+                            <i class="bi bi-cloud-upload-fill me-1"></i>
+                            Загрузка списков
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'applications_list' %}active{% endif %}" 
+                           href="{% url 'admissions:applications_list' %}">
+                            <i class="bi bi-list-ul me-1"></i>
+                            Просмотр списков
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bar-chart-fill me-1"></i>
+                            Проходные баллы
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admissions:passing_scores' %}">
+                                    <i class="bi bi-calculator me-2"></i>
+                                    Текущие баллы
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admissions:passing_scores_history' %}">
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    История баллов
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admissions:applicant_chances' %}">
+                                    <i class="bi bi-person-check me-2"></i>
+                                    Проверить шансы
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" 
+                           href="{% url 'admissions:reports' %}">
+                            <i class="bi bi-file-earmark-text-fill me-1"></i>
+                            Отчеты
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/" target="_blank">
+                            <i class="bi bi-gear-fill me-1"></i>
+                            Админка
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumbs -->
+    {% block breadcrumbs %}
+    <nav aria-label="breadcrumb" class="bg-light py-2">
+        <div class="container">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'admissions:dashboard' %}">
+                        <i class="bi bi-house"></i> Главная
+                    </a>
+                </li>
+                {% block breadcrumb_items %}{% endblock %}
+            </ol>
+        </div>
+    </nav>
+    {% endblock %}
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {% if message.tags == 'error' %}
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    {% elif message.tags == 'success' %}
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {% elif message.tags == 'info' %}
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                    {% endif %}
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="flex-shrink-0">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-4 bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5 class="mb-3">
+                        <i class="bi bi-mortarboard-fill me-2"></i>
+                        О системе
+                    </h5>
+                    <p class="text-white-50">
+                        Система автоматизированного анализа конкурсных списков 
+                        и расчета проходных баллов для образовательных программ.
+                    </p>
+                </div>
+                
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5 class="mb-3">
+                        <i class="bi bi-link-45deg me-2"></i>
+                        Быстрые ссылки
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{% url 'admissions:dashboard' %}" class="text-white-50 text-decoration-none">
+                                <i class="bi bi-chevron-right me-1"></i> Главная страница
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'admissions:upload' %}" class="text-white-50 text-decoration-none">
+                                <i class="bi bi-chevron-right me-1"></i> Загрузка данных
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'admissions:passing_scores' %}" class="text-white-50 text-decoration-none">
+                                <i class="bi bi-chevron-right me-1"></i> Проходные баллы
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="/admin/" class="text-white-50 text-decoration-none" target="_blank">
+                                <i class="bi bi-chevron-right me-1"></i> Панель администратора
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-4">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Информация
+                    </h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2">
+                            <i class="bi bi-calendar3 me-2"></i>
+                            © 2026 Система анализа поступления
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-code-slash me-2"></i>
+                            Django {{ django_version }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-database me-2"></i>
+                            PostgreSQL
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr class="my-4 bg-white opacity-25">
+            
+            <div class="row">
+                <div class="col-md-12 text-center text-white-50">
+                    <small>
+                        Разработано для автоматизации работы приёмной комиссии | 
+                        Московская предпрофессиональная олимпиада школьников
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'admissions/js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
