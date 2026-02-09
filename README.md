@@ -372,9 +372,9 @@ python manage.py loaddata backup.json
 
 ## 📄 Материалы
 
-**Проект:** [https://github.com/your-username/admission-analysis](https://github.com/your-username/admission-analysis)
+**Проект:** [https://github.com/T1mleT/admission-analysis](https://github.com/T1mleT/admission-analysis)
 
-**Видео:** [https://github.com/your-username/admission-analysis/issues](https://github.com/your-username/admission-analysis/issues)
+**Видео:** [vk](https://github.com/your-username/admission-analysis/issues)
 
 **Документация:** [Wiki](https://github.com/your-username/admission-analysis/wiki)
 
@@ -384,11 +384,11 @@ python manage.py loaddata backup.json
 
 ### Команда разработки
 
-- **[Тимофей Летуновский]** - Team Lead, Backend Developer
+- **Тимофей Летуновский** - Team Lead, Backend Developer
 
-- **[Вадим Билера]** - Frontend Developer
+- **Вадим Билера** - Frontend Developer
 
-- **[Дмитрий Нарижний]** - Database Developer
+- **Дмитрий Нарижний** - Database Developer
 
 ### Благодарности
 
