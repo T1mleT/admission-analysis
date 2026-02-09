@@ -257,7 +257,13 @@ python manage.py createsuperuser
 - Email: `admin@example.com`
 - Password: `********`
 
-### 4. Запуск сервера разработки
+### 4. Соберите статику
+
+```bash
+python manage.py collectstatic
+```
+
+### 5. Запуск сервера разработки
 
 ```bash
 python manage.py runserver
