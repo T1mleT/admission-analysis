@@ -112,7 +112,7 @@ git --version       # Git 2.30+
 
 ```bash
 # Клонировать проект
-git clone https://github.com/your-username/admission-analysis.git
+git clone https://github.com/T1mleT/admission-analysis.git
 
 # Перейти в директорию
 cd admission-analysis
